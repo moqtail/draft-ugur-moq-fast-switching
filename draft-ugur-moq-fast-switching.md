@@ -2,18 +2,18 @@
 title: "Subscriber-Side Multi-Variant Fast Track Switching for MOQT"
 abbrev: moq-fast-switching
 docname: draft-ugur-moq-fast-switching-latest
-category: info
+date: {DATE}
+category: std
 
 ipr: trust200902
-area: "Applications and Real-Time"
+area: Applications and Real-Time
 submissiontype: IETF
+workgroup: Media Over QUIC
 keyword:
  - media over quic
  - fast track switching
  - adaptive bitrate
 venue:
-  mail: "moq@ietf.org"
-  arch: "https://mailarchive.ietf.org/arch/browse/moq/"
   github: "moqtail/draft-ugur-moq-fast-switching"
   latest: "https://moqtail.github.io/draft-ugur-moq-fast-switching/draft-ugur-moq-fast-switching.html"
 
