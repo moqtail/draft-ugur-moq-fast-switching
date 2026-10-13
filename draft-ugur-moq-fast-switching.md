@@ -123,7 +123,7 @@ Catalog fields a publisher uses to advertise them. {{selection}} specifies
 how a subscriber computes candidate switch points and selects among them.
 {{switching}} specifies how a subscriber executes a switch using SWITCH_FROM.
 {{buffering}} describes the buffering a subscriber needs during a switch.
-{{security}} and {{iana}} concludes the document with security and IANA
+{{security}} and {{iana}} conclude the document with security and IANA
 considerations.
 
 # Conventions and Definitions {#model}
@@ -334,7 +334,7 @@ preferring the candidate with the largest "keyframeSpacing" rather than by
 preferring progress toward the Target bitrate. This simpler policy is easier
 to implement and is already in use in at least one implementation of this
 document, at the cost of occasionally taking a less direct path to the
-Target bitratae.
+Target bitrate.
 
 ## Worked Example
 
@@ -351,11 +351,11 @@ Suppose the application now requests a switch to the 1080p bitrate. The
 subscriber computes targetGroup(T) and Distance(T) for every Track in the
 1080p GoP Ladder:
 
-| Track        | T | targetGroup(T) | Distance(T) |
-|:-------------|--:|---------------:|------------:|
-| 1080p-short  | 2 |              15 |           1 |
-| 1080p-medium | 4 |              15 |           1 |
-| 1080p-long   | 8 |              17 |           5 |
+| Track        |    T | targetGroup(T) | Distance(T) |
+| :----------- | ---: | -------------: | ----------: |
+| 1080p-short  |    2 |             15 |           1 |
+| 1080p-medium |    4 |             15 |           1 |
+| 1080p-long   |    8 |             17 |           5 |
 
 1080p-short and 1080p-medium tie for the smallest Distance; both are in the
 Target bitrate's GoP Ladder, so the subscriber picks one of them, for
