@@ -4,44 +4,43 @@
 <meta charset="utf-8">
 <meta content="Common,Latin" name="scripts">
 <meta content="initial-scale=1.0" name="viewport">
-<title>Subscriber-Side Multi-Variant Fast Switching for Media over QUIC</title>
+<title>Subscriber-Side Multi-Variant Fast Track Switching for MOQT</title>
 <meta content="Deniz Ugur" name="author">
 <meta content="Zafer Gurel" name="author">
-<meta content="Ali C. Begen" name="author">
+<meta content="Ali Begen" name="author">
 <meta content="
-       This document describes Subscriber-Side Fast Switching (SFS), a technique
-that allows a Media over QUIC Transport (MOQT) subscriber to switch between
-tracks that carry the same encoded quality but use different Group of
-Pictures (GOP) lengths, combining the compression efficiency of a long GOP
-with the low switching latency of a short GOP. A publisher using this
-technique packages each encoded quality as a ladder of tracks distinguished
+       This document describes subscriber-side multi-variant fast track switching (MVFTS), a technique
+that allows a MOQ Transport (MOQT) subscriber to switch between
+tracks that are encoded at the same bitrate but use different group of
+pictures (GoP) lengths, combining the compression efficiency of a long GoP
+with the low switching delay of a short GoP. A publisher using this
+technique packages each encoded bitrate as a ladder of tracks distinguished
 only by their keyframe interval, numbers those tracks' Group IDs so that they
 share a common alignment, and advertises the keyframe interval of each track
-in the MOQT Streaming Format (MSF) catalog. A subscriber uses this
+in a MOQT Streaming Format (MSF) catalog. A subscriber uses this
 information to compute the nearest valid switch point on any track in scope
-and to perform the switch using the SWITCH_FROM request parameter in Soft
+and to perform the switch using the SWITCH_FROM request parameter in soft
 mode. 
     " name="description">
 <meta content="xml2rfc 3.34.1" name="generator">
 <meta content="media over quic" name="keyword">
-<meta content="fast switching" name="keyword">
+<meta content="fast track switching" name="keyword">
 <meta content="adaptive bitrate" name="keyword">
-<meta content="GOP ladder" name="keyword">
 <meta content="draft-ugur-moq-fast-switching-latest" name="ietf.draft">
 <!-- Generator version information:
   xml2rfc 3.34.1
-    Python 3.14.7
-    ConfigArgParse 1.7.7
+    Python 3.14.8
+    ConfigArgParse 1.8.0
     google-i18n-address 3.1.1
     intervaltree 3.2.1
     Jinja2 3.1.6
     lxml 6.1.1
     natsort 8.4.0
-    platformdirs 4.11.10
+    platformdirs 4.12.2
     pycountry 24.6.1
     PyYAML 6.0.3
     requests 2.33.1
-    wcwidth 0.8.4
+    wcwidth 0.9.1
 -->
 <link href="draft-ugur-moq-fast-switching.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -1061,7 +1060,7 @@ svg {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Ugur, et al.</td>
-<td class="center">Expires 4 April 2027</td>
+<td class="center">Expires 16 April 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1074,12 +1073,12 @@ svg {
 <dd class="internet-draft">draft-ugur-moq-fast-switching-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-10-01" class="published">1 October 2026</time>
+<time datetime="2026-10-13" class="published">13 October 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-04-04">4 April 2027</time></dd>
+<dd class="expires"><time datetime="2027-04-16">16 April 2027</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1091,26 +1090,26 @@ svg {
 <div class="org">Ozyegin University</div>
 </div>
 <div class="author">
-      <div class="author-name">A. C. Begen</div>
-<div class="org">Ozyegin University</div>
+      <div class="author-name">A. Begen</div>
+<div class="org">Networked Media</div>
 </div>
 </dd>
 </dl>
 </div>
-<h1 id="title">Subscriber-Side Multi-Variant Fast Switching for Media over QUIC</h1>
+<h1 id="title">Subscriber-Side Multi-Variant Fast Track Switching for MOQT</h1>
 <section id="section-abstract">
       <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
-<p id="section-abstract-1">This document describes Subscriber-Side Fast Switching (SFS), a technique
-that allows a Media over QUIC Transport (MOQT) subscriber to switch between
-tracks that carry the same encoded quality but use different Group of
-Pictures (GOP) lengths, combining the compression efficiency of a long GOP
-with the low switching latency of a short GOP. A publisher using this
-technique packages each encoded quality as a ladder of tracks distinguished
+<p id="section-abstract-1">This document describes subscriber-side multi-variant fast track switching (MVFTS), a technique
+that allows a MOQ Transport (MOQT) subscriber to switch between
+tracks that are encoded at the same bitrate but use different group of
+pictures (GoP) lengths, combining the compression efficiency of a long GoP
+with the low switching delay of a short GoP. A publisher using this
+technique packages each encoded bitrate as a ladder of tracks distinguished
 only by their keyframe interval, numbers those tracks' Group IDs so that they
 share a common alignment, and advertises the keyframe interval of each track
-in the MOQT Streaming Format (MSF) catalog. A subscriber uses this
+in a MOQT Streaming Format (MSF) catalog. A subscriber uses this
 information to compute the nearest valid switch point on any track in scope
-and to perform the switch using the SWITCH_FROM request parameter in Soft
+and to perform the switch using the SWITCH_FROM request parameter in soft
 mode.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
 </section>
 <section class="note rfcEditorRemove" id="section-note.1">
@@ -1148,7 +1147,7 @@ mode.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 4 April 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 16 April 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1264,28 +1263,28 @@ mode.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
 <a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
       </h2>
 <p id="section-1-1">Adaptive bitrate (ABR) delivery of live and on-demand media involves a
-tension between two goals. Long GOPs improve compression efficiency, since
-inter-coded pictures are cheaper to send than keyframes. Short GOPs reduce
-the latency of joining a track or switching to a different one, since a
-subscriber can only begin decoding a track at a keyframe. A publisher
-therefore has to pick a single GOP length that compromises between these two
-goals for every track it offers, unless more than one GOP length is made
+tension between two goals. Long GoPs improve compression efficiency, since
+inter-coded pictures are cheaper to send than keyframes. Short GoPs reduce
+the delay of joining a track or switching to a different one, since a
+subscriber can only begin decoding a track at a keyframe. A publisher,
+therefore, has to pick a single GoP length that compromises between these two
+goals for every track it offers, unless more than one GoP length is made
 available at once.<a href="#section-1-1" class="pilcrow">¶</a></p>
-<p id="section-1-2">This document describes a technique, Subscriber-Side Fast Switching (SFS),
-in which a publisher offers several tracks per encoded quality, each using a
-different GOP length, and a subscriber picks whichever of these tracks gets
-it to its desired quality soonest. Because every track offering the same
-quality carries identical content, encoded at the same bitrate and
+<p id="section-1-2">This document describes a technique, subscriber-side multi-variant fast track switching (MVFTS),
+in which a publisher offers several tracks per encoded bitrate and resolution, each using a
+different GoP length, and a subscriber picks whichever of these tracks gets
+it to its desired bitrate the soonest. Because every track at the same
+bitrate carries identical content, encoded at the same
 resolution, a subscriber can switch between them purely to shorten its wait
-for a keyframe, and can equally switch between tracks of different qualities
+for a keyframe, and can equally switch between tracks of different bitrates
 by considering the keyframe opportunities of both the current and the target
-quality's tracks together.<a href="#section-1-2" class="pilcrow">¶</a></p>
+bitrate's tracks together.<a href="#section-1-2" class="pilcrow">¶</a></p>
 <p id="section-1-3">This technique depends on two other specifications. It reuses the Catalog
 and Track Object model, including the "keyframeSpacing" and "altGroup" Track
 Object fields, defined by the MOQT Streaming Format <span>[<a href="#MSF" class="cite xref">MSF</a>]</span>. It performs the
-actual switch using the SWITCH_FROM request parameter and its Soft mode,
+actual switch using the SWITCH_FROM request parameter and its soft mode,
 proposed for <span>[<a href="#MoQTransport" class="cite xref">MoQTransport</a>]</span> in <span>[<a href="#SWITCH-FROM-PR" class="cite xref">SWITCH-FROM-PR</a>]</span> and
-<span>[<a href="#SWITCH-FROM-SOFT-PR" class="cite xref">SWITCH-FROM-SOFT-PR</a>]</span> respectively. Neither pull request had been merged
+<span>[<a href="#SWITCH-FROM-SOFT-PR" class="cite xref">SWITCH-FROM-SOFT-PR</a>]</span>, respectively. Neither pull request had been merged
 into <span>[<a href="#MoQTransport" class="cite xref">MoQTransport</a>]</span> at the time of writing; this document is written as
 though both are already part of it, and implementers should consult the
 referenced pull requests for their current status before relying on this
@@ -1295,9 +1294,9 @@ subscriber can use the "keyframeSpacing" field to compute a single valid
 switch point when first joining a track. This document is intended to
 supersede that proposal as the primary specification of keyframe-interval-
 based switching for MOQT: it keeps the "keyframeSpacing" field but adds the
-Group ID alignment convention, the multi-track and multi-quality selection
+Group ID alignment convention, the multi-track and multi-bitrate selection
 procedure, and the SWITCH_FROM-based switching procedure needed to use it
-continuously, not only when first joining a broadcast.<a href="#section-1-4" class="pilcrow">¶</a></p>
+continuously, not only when first joining a live broadcast.<a href="#section-1-4" class="pilcrow">¶</a></p>
 <div id="document-structure">
 <section id="section-1.1">
         <h3 id="name-document-structure">
@@ -1310,8 +1309,8 @@ Catalog fields a publisher uses to advertise them. <a href="#selection" class="a
 how a subscriber computes candidate switch points and selects among them.
 <a href="#switching" class="auto internal xref">Section 7</a> specifies how a subscriber executes a switch using SWITCH_FROM.
 <a href="#buffering" class="auto internal xref">Section 8</a> describes the buffering a subscriber needs during a switch.
-<a href="#security" class="auto internal xref">Section 9</a> and <a href="#iana" class="auto internal xref">Section 10</a> close the document with Security and IANA
-Considerations.<a href="#section-1.1-1" class="pilcrow">¶</a></p>
+<a href="#security" class="auto internal xref">Section 9</a> and <a href="#iana" class="auto internal xref">Section 10</a> concludes the document with security and IANA
+considerations.<a href="#section-1.1-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1334,25 +1333,25 @@ such as resolution, bitrate, and codec profile, excluding its keyframe
 interval.<a href="#section-2-3.2.1" class="pilcrow">¶</a></p>
 </dd>
         <dd class="break"></dd>
-<dt id="section-2-3.3">GOP:</dt>
+<dt id="section-2-3.3">GoP:</dt>
         <dd style="margin-left: 1.5em" id="section-2-3.4">
           <p id="section-2-3.4.1">Group of Pictures. The set of coded pictures between one keyframe
 (inclusive) and the next (exclusive). Within this document, each MOQT
-Group (<span>[<a href="#MoQTransport" class="cite xref">MoQTransport</a>]</span>) carries exactly one GOP (see <a href="#publisher-reqs" class="auto internal xref">Section 4</a>).<a href="#section-2-3.4.1" class="pilcrow">¶</a></p>
+Group (<span>[<a href="#MoQTransport" class="cite xref">MoQTransport</a>]</span>) carries exactly one GoP (see <a href="#publisher-reqs" class="auto internal xref">Section 4</a>).<a href="#section-2-3.4.1" class="pilcrow">¶</a></p>
 </dd>
         <dd class="break"></dd>
 <dt id="section-2-3.5">Switch Set:</dt>
         <dd style="margin-left: 1.5em" id="section-2-3.6">
           <p id="section-2-3.6.1">The set of Tracks that share one "altGroup" value (<span>[<a href="#MSF" class="cite xref">MSF</a>]</span>) and among
-which a subscriber performs SFS. A Switch Set can contain Tracks of more
-than one Quality.<a href="#section-2-3.6.1" class="pilcrow">¶</a></p>
+which a subscriber performs MVFTS. A Switch Set can contain Tracks of more
+than one bitrate/resolution.<a href="#section-2-3.6.1" class="pilcrow">¶</a></p>
 </dd>
         <dd class="break"></dd>
-<dt id="section-2-3.7">GOP Ladder:</dt>
+<dt id="section-2-3.7">GoP Ladder:</dt>
         <dd style="margin-left: 1.5em" id="section-2-3.8">
-          <p id="section-2-3.8.1">The subset of a Switch Set's Tracks that share one Quality but differ in
-their "keyframeSpacing" (<span>[<a href="#MSF" class="cite xref">MSF</a>]</span>) value. A Switch Set contains one GOP
-Ladder per Quality it offers.<a href="#section-2-3.8.1" class="pilcrow">¶</a></p>
+          <p id="section-2-3.8.1">The subset of a Switch Set's Tracks that share one bitrate but differ in
+their "keyframeSpacing" (<span>[<a href="#MSF" class="cite xref">MSF</a>]</span>) value. A Switch Set contains one GoP
+Ladder per bitrate it offers.<a href="#section-2-3.8.1" class="pilcrow">¶</a></p>
 </dd>
         <dd class="break"></dd>
 <dt id="section-2-3.9">Alignment Unit (Gm):</dt>
@@ -1390,27 +1389,27 @@ that track without missing or duplicating any presented media.<a href="#section-
       <h2 id="name-overview">
 <a href="#section-3" class="section-number selfRef">3. </a><a href="#name-overview" class="section-name selfRef">Overview</a>
       </h2>
-<p id="section-3-1">A publisher using SFS offers one or more Qualities, each as a GOP Ladder of
+<p id="section-3-1">A publisher using MVFTS offers one or more bitrates, each as a GoP Ladder of
 two or more Tracks that are otherwise identical but use different keyframe
 intervals, all combined into a single Switch Set. For example, a publisher
-might offer a 720p Quality and a 1080p Quality, each with short-, medium-,
-and long-GOP Tracks, for a Switch Set of six Tracks in total:<a href="#section-3-1" class="pilcrow">¶</a></p>
+might offer a 720p bitrate and a 1080p bitrate, each with short-, medium-,
+and long-GoP Tracks, for a Switch Set of six Tracks in total:<a href="#section-3-1" class="pilcrow">¶</a></p>
 <span id="name-example-switch-set-with-two"></span><figure id="figure-1">
         <div class="lang-ascii-figure sourcecode" id="section-3-2.1">
 <pre>
 Switch Set (altGroup = 1)
- +-- 720p GOP Ladder
+ +-- 720p GoP Ladder
  |    +-- 720p-short   (keyframeSpacing = 2)
  |    +-- 720p-medium  (keyframeSpacing = 4)
  |    +-- 720p-long    (keyframeSpacing = 8)
- +-- 1080p GOP Ladder
+ +-- 1080p GoP Ladder
       +-- 1080p-short  (keyframeSpacing = 2)
       +-- 1080p-medium (keyframeSpacing = 4)
       +-- 1080p-long   (keyframeSpacing = 8)
 </pre>
 </div>
 <figcaption><a href="#figure-1" class="selfRef">Figure 1</a>:
-<a href="#name-example-switch-set-with-two" class="selfRef">Example Switch Set with two Qualities</a>
+<a href="#name-example-switch-set-with-two" class="selfRef">Example Switch Set with two bitrates</a>
         </figcaption></figure>
 <p id="section-3-3">The publisher numbers the Group IDs of every Track in the Switch Set
 according to a single, shared Alignment Unit, so that any Group ID on any
@@ -1418,10 +1417,10 @@ Track corresponds to a specific, predictable position in every other Track
 (<a href="#publisher-reqs" class="auto internal xref">Section 4</a>), and advertises each Track's "keyframeSpacing" and
 "altGroup" in the Catalog (<a href="#catalog" class="auto internal xref">Section 5</a>).<a href="#section-3-3" class="pilcrow">¶</a></p>
 <p id="section-3-4">A subscriber that is receiving one Track from the Switch Set continuously
-re-evaluates whether a different Track in the same GOP Ladder, or a
-different GOP Ladder entirely, has a closer upcoming Switch Point
+re-evaluates whether a different Track in the same GoP Ladder, or a
+different GoP Ladder entirely, has a closer upcoming Switch Point
 (<a href="#selection" class="auto internal xref">Section 6</a>). When it finds one, it issues a SUBSCRIBE or REQUEST_UPDATE
-carrying SWITCH_FROM in Soft mode, targeting that Switch Point
+carrying SWITCH_FROM in soft mode, targeting that Switch Point
 (<a href="#switching" class="auto internal xref">Section 7</a>), and buffers objects from both Tracks until the handoff
 completes (<a href="#buffering" class="auto internal xref">Section 8</a>).<a href="#section-3-4" class="pilcrow">¶</a></p>
 </section>
@@ -1431,7 +1430,7 @@ completes (<a href="#buffering" class="auto internal xref">Section 8</a>).<a hre
       <h2 id="name-publisher-requirements">
 <a href="#section-4" class="section-number selfRef">4. </a><a href="#name-publisher-requirements" class="section-name selfRef">Publisher Requirements</a>
       </h2>
-<p id="section-4-1">A publisher that offers a Switch Set for use with SFS <span class="bcp14">MUST</span> meet the
+<p id="section-4-1">A publisher that offers a Switch Set for use with MVFTS <span class="bcp14">MUST</span> meet the
 following requirements for every Track in that Switch Set, in addition to
 any other applicable requirements of <span>[<a href="#MSF" class="cite xref">MSF</a>]</span>:<a href="#section-4-1" class="pilcrow">¶</a></p>
 <ul class="normal">
@@ -1444,15 +1443,15 @@ Group.<a href="#section-4-2.1.1" class="pilcrow">¶</a></p>
         <li class="normal" id="section-4-2.2">
           <p id="section-4-2.2.1">Every Track in the Switch Set <span class="bcp14">MUST</span> be time-aligned with every other Track
 at Object boundaries: the media presentation time of the first Object of
-a Group on one Track <span class="bcp14">MUST</span> coincide with the media presentation time of
-some Object on every other Track in the Switch Set.<a href="#section-4-2.2.1" class="pilcrow">¶</a></p>
+a Group on one Track <span class="bcp14">MUST</span> coincide with the media presentation time of the
+same Object on every other Track in the Switch Set.<a href="#section-4-2.2.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-4-2.3">
           <p id="section-4-2.3.1">Every Track's "keyframeSpacing" value <span class="bcp14">MUST</span> be an integer multiple of the
 Switch Set's Alignment Unit (Gm), i.e., the smallest "keyframeSpacing"
 value among all Tracks in the Switch Set. This is what makes the Frame
 Number defined in <a href="#selection" class="auto internal xref">Section 6</a> comparable across every Track in the
-Switch Set, including Tracks of different Qualities.<a href="#section-4-2.3.1" class="pilcrow">¶</a></p>
+Switch Set, including Tracks of different bitrates.<a href="#section-4-2.3.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-4-2.4">
           <p id="section-4-2.4.1">For a Track whose "keyframeSpacing" is S, let k = S / Gm. The publisher
@@ -1474,7 +1473,7 @@ that Groups 2, 3, and 4 will never be published on this Track.<a href="#section-
       <h2 id="name-catalog">
 <a href="#section-5" class="section-number selfRef">5. </a><a href="#name-catalog" class="section-name selfRef">Catalog</a>
       </h2>
-<p id="section-5-1">A publisher advertises the properties needed for SFS using two Track Object
+<p id="section-5-1">A publisher advertises the properties needed for MVFTS using two Track Object
 fields already defined by <span>[<a href="#MSF" class="cite xref">MSF</a>]</span>:<a href="#section-5-1" class="pilcrow">¶</a></p>
 <span class="break"></span><dl class="dlParallel" id="section-5-2">
         <dt id="section-5-2.1">altGroup:</dt>
@@ -1489,16 +1488,16 @@ Set.<a href="#section-5-2.2.1" class="pilcrow">¶</a></p>
           <p id="section-5-2.4.1">Every Track in a Switch Set <span class="bcp14">MUST</span> include "keyframeSpacing", populated with
 the number of Objects in each of that Track's Groups (equivalently, its
 keyframe interval expressed in Objects). A subscriber uses this field, and
-the constraints in <a href="#publisher-reqs" class="auto internal xref">Section 4</a>, to identify each Track's GOP Ladder
-(the other Tracks in the Switch Set that share the same Quality) and to
+the constraints in <a href="#publisher-reqs" class="auto internal xref">Section 4</a>, to identify each Track's GoP Ladder
+(the other Tracks in the Switch Set that share the same bitrate) and to
 compute Frame Numbers and Switch Points as described in <a href="#selection" class="auto internal xref">Section 6</a>.<a href="#section-5-2.4.1" class="pilcrow">¶</a></p>
 </dd>
       <dd class="break"></dd>
 </dl>
 <p id="section-5-3">This document does not define any further Catalog fields; a subscriber
-distinguishes Tracks of the same Quality from Tracks of different Qualities
-within a Switch Set using the same Quality-identifying Track Object fields
-it would otherwise use to select among non-SFS Tracks (for example, "width",
+distinguishes Tracks of the same bitrate from Tracks of different bitrates
+within a Switch Set using the same bitrate-identifying Track Object fields
+it would otherwise use to select among non-MVFTS Tracks (for example, "width",
 "height", and "bitrate").<a href="#section-5-3" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -1563,35 +1562,35 @@ candidate Target Tracks reach a Switch Point.<a href="#section-6.2-5" class="pil
 <p id="section-6.3-1">A subscriber evaluates candidate Target Tracks and picks one as follows:<a href="#section-6.3-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-6.3-2.1">
-            <p id="section-6.3-2.1.1">If the subscriber is not changing Quality, the candidates are the other
-Tracks in the Current Track's GOP Ladder with a strictly larger
+            <p id="section-6.3-2.1.1">If the subscriber is not changing bitrate, the candidates are the other
+Tracks in the Current Track's GoP Ladder with a strictly larger
 "keyframeSpacing" than the Current Track. The subscriber picks the
 candidate with the smallest Distance, i.e., the one that lets it move to
 a more efficient Track as soon as possible. A subscriber that finds no
 Switch Point closer than remaining on the Current Track <span class="bcp14">SHOULD NOT</span> switch.<a href="#section-6.3-2.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-6.3-2.2">
-            <p id="section-6.3-2.2.1">If the subscriber is changing to a different Quality, the candidates are
-every Track in the Target Quality's GOP Ladder, together with the other
-Tracks in the Current Track's GOP Ladder with a strictly larger
+            <p id="section-6.3-2.2.1">If the subscriber is changing to a different bitrate, the candidates are
+every Track in the Target bitrate's GoP Ladder, together with the other
+Tracks in the Current Track's GoP Ladder with a strictly larger
 "keyframeSpacing" than the Current Track. The subscriber picks the
 candidate with the smallest Distance. If more than one candidate ties for
 the smallest Distance, the subscriber prefers a candidate in the Target
-Quality's GOP Ladder, since it makes direct progress toward the desired
-Quality. A switch to a Track in the Current Track's own GOP Ladder in this
-case is an intermediate step and does not end the Quality change; the
+Quality's GoP Ladder, since it makes direct progress toward the desired
+bitrate. A switch to a Track in the Current Track's own GoP Ladder in this
+case is an intermediate step and does not end the bitrate change; the
 subscriber repeats this procedure after each switch until it reaches the
-Target Quality.<a href="#section-6.3-2.2.1" class="pilcrow">¶</a></p>
+Target bitrate.<a href="#section-6.3-2.2.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 <p id="section-6.3-3">A subscriber <span class="bcp14">MAY</span> instead implement a simpler policy that only ever considers
-one GOP Ladder at a time (the Current Track's GOP Ladder, or, when changing
-Quality, only the Target Quality's GOP Ladder) and that breaks ties by
+one GoP Ladder at a time (the Current Track's GoP Ladder, or, when changing
+bitrate, only the Target Quality's GoP Ladder) and that breaks ties by
 preferring the candidate with the largest "keyframeSpacing" rather than by
-preferring progress toward the Target Quality. This simpler policy is easier
+preferring progress toward the Target bitrate. This simpler policy is easier
 to implement and is already in use in at least one implementation of this
 document, at the cost of occasionally taking a less direct path to the
-Target Quality.<a href="#section-6.3-3" class="pilcrow">¶</a></p>
+Target bitratae.<a href="#section-6.3-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="worked-example">
@@ -1608,9 +1607,9 @@ and Groups are numbered 1, 5, 9, 13, ...). Its Frame Number is:<a href="#section
 frameNumber = (13 - 1) * 2 + 3 + 1 = 28
 </pre><a href="#section-6.4-2" class="pilcrow">¶</a>
 </div>
-<p id="section-6.4-3">Suppose the application now requests a switch to the 1080p Quality. The
+<p id="section-6.4-3">Suppose the application now requests a switch to the 1080p bitrate. The
 subscriber computes targetGroup(T) and Distance(T) for every Track in the
-1080p GOP Ladder:<a href="#section-6.4-3" class="pilcrow">¶</a></p>
+1080p GoP Ladder:<a href="#section-6.4-3" class="pilcrow">¶</a></p>
 <table class="center" id="table-1">
           <caption><a href="#table-1" class="selfRef">Table 1</a></caption>
 <thead>
@@ -1643,7 +1642,7 @@ subscriber computes targetGroup(T) and Distance(T) for every Track in the
           </tbody>
         </table>
 <p id="section-6.4-5">1080p-short and 1080p-medium tie for the smallest Distance; both are in the
-Target Quality's GOP Ladder, so the subscriber picks one of them, for
+Target bitrate's GoP Ladder, so the subscriber picks one of them, for
 example 1080p-medium, and switches to Group 15 of that Track.<a href="#section-6.4-5" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -1656,19 +1655,19 @@ example 1080p-medium, and switches to Group 15 of that Track.<a href="#section-6
       </h2>
 <p id="section-7-1">A subscriber performs a switch found as described in <a href="#selection" class="auto internal xref">Section 6</a> by
 sending a SUBSCRIBE, or a REQUEST_UPDATE on an existing subscription,
-carrying the SWITCH_FROM parameter (<span>[<a href="#SWITCH-FROM-PR" class="cite xref">SWITCH-FROM-PR</a>]</span>) in Soft mode
+carrying the SWITCH_FROM parameter (<span>[<a href="#SWITCH-FROM-PR" class="cite xref">SWITCH-FROM-PR</a>]</span>) in soft mode
 (<span>[<a href="#SWITCH-FROM-SOFT-PR" class="cite xref">SWITCH-FROM-SOFT-PR</a>]</span>), with the Switch From Request ID identifying the
 Current Track's subscription and the Start Group set to the computed
 targetGroup(T).<a href="#section-7-1" class="pilcrow">¶</a></p>
-<p id="section-7-2">A subscriber <span class="bcp14">MUST NOT</span> use Hard mode for this purpose. Because the Current
+<p id="section-7-2">A subscriber <span class="bcp14">MUST NOT</span> use hard mode for this purpose. Because the Current
 and Target Tracks use different keyframe intervals, a relay has no way to
-know, from Hard mode alone, where the two Tracks' Objects correspond to the
+know, from hard mode alone, where the two Tracks' Objects correspond to the
 same point in the media timeline, and could stop forwarding the Current
 Track before the Target Track has anything to show in its place. Soft mode
 avoids this by having the publisher continue the Current Track's
 subscription up to a computed End Group before stopping it, giving a clean
 handoff instead of a gap or an overlap of arbitrary duration.<a href="#section-7-2" class="pilcrow">¶</a></p>
-<p id="section-7-3">Per <span>[<a href="#SWITCH-FROM-SOFT-PR" class="cite xref">SWITCH-FROM-SOFT-PR</a>]</span>, Soft mode stops the suspending subscription at
+<p id="section-7-3">Per <span>[<a href="#SWITCH-FROM-SOFT-PR" class="cite xref">SWITCH-FROM-SOFT-PR</a>]</span>, soft mode stops the suspending subscription at
 "Start Group - 1". Because Group IDs are not comparable 1:1 across Tracks
 with different "keyframeSpacing" values, a subscriber instead computes the
 End Group it expects the publisher to use directly from the Current Track's
@@ -1721,7 +1720,7 @@ it keeps subscribed in this way at once; see <a href="#security" class="auto int
       <h2 id="name-client-buffering-and-playou">
 <a href="#section-8" class="section-number selfRef">8. </a><a href="#name-client-buffering-and-playou" class="section-name selfRef">Client Buffering and Playout Continuity</a>
       </h2>
-<p id="section-8-1">Because Soft mode keeps delivering the Current Track up to its End Group
+<p id="section-8-1">Because soft mode keeps delivering the Current Track up to its End Group
 while the Target Track begins delivering from its Switch Point, a
 subscriber receives Objects from both Tracks for a short overlap. A
 subscriber <span class="bcp14">MUST</span> hold received Objects from both Tracks in a small buffer,
@@ -1799,7 +1798,7 @@ editors.<a href="#section-12-1" class="pilcrow">¶</a></p>
 <dl class="references">
 <dt id="MoQTransport">[MoQTransport]</dt>
         <dd>
-<span class="refAuthor">Nandakumar, S.</span>, <span class="refAuthor">Vasiliev, V.</span>, <span class="refAuthor">Swett, I.</span>, and <span class="refAuthor">A. Frindell</span>, <span class="refTitle">"Media over QUIC Transport"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-moq-transport-21</span>, <time datetime="2026-09-08" class="refDate">8 September 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21">https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21</a>&gt;</span>. </dd>
+<span class="refAuthor">Nandakumar, S.</span>, <span class="refAuthor">Vasiliev, V.</span>, <span class="refAuthor">Swett, I.</span>, and <span class="refAuthor">A. Frindell</span>, <span class="refTitle">"Media over QUIC Transport"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-moq-transport-22</span>, <time datetime="2026-10-01" class="refDate">1 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-22">https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-22</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="MSF">[MSF]</dt>
         <dd>
@@ -1883,11 +1882,11 @@ final version of this document.<a href="#appendix-A-2" class="pilcrow">¶</a></p
 </div>
 </address>
 <address class="vcard">
-        <div dir="auto" class="left"><span class="fn nameRole">Ali C. Begen</span></div>
-<div dir="auto" class="left"><span class="org">Ozyegin University</span></div>
+        <div dir="auto" class="left"><span class="fn nameRole">Ali Begen</span></div>
+<div dir="auto" class="left"><span class="org">Networked Media</span></div>
 <div class="email">
 <span>Email:</span>
-<a href="mailto:ali.begen@ozyegin.edu.tr" class="email">ali.begen@ozyegin.edu.tr</a>
+<a href="mailto:ali.begen@networked.media" class="email">ali.begen@networked.media</a>
 </div>
 </address>
 </section>
