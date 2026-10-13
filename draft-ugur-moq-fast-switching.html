@@ -1526,14 +1526,14 @@ on every Track in the Switch Set.<a href="#section-6.1-3" class="pilcrow">¶</a>
         <h3 id="name-switch-points">
 <a href="#section-6.2" class="section-number selfRef">6.2. </a><a href="#name-switch-points" class="section-name selfRef">Switch Points</a>
         </h3>
-<p id="section-6.2-1">Given a candidate Target Track with keyframeSpacing T (also a multiple of
+<p id="section-6.2-1">Given a candidate Target Track with keyframeSpacing S (also a multiple of
 Gm, per <a href="#publisher-reqs" class="auto internal xref">Section 4</a>), and the subscriber's current Frame Number F
 (computed from the Current Track's most recently received Location), the
 nearest Switch Point on the Target Track that is not earlier than F is Group
 ID:<a href="#section-6.2-1" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-6.2-2">
 <pre>
-targetGroup(T) = 1 + (T / Gm) * ceil((F - 1) / T)
+targetGroup(S) = 1 + (S / Gm) * ceil((F - 1) / S)
 </pre><a href="#section-6.2-2" class="pilcrow">¶</a>
 </div>
 <p id="section-6.2-3">This is the Group ID of the first Group on the Target Track whose first
@@ -1541,7 +1541,7 @@ Object's Frame Number is greater than or equal to F. The number of Frame
 Numbers between F and that Switch Point,<a href="#section-6.2-3" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-6.2-4">
 <pre>
-Distance(T) = (targetGroup(T) - 1) * Gm + 1 - F
+Distance(S) = (targetGroup(S) - 1) * Gm + 1 - F
 </pre><a href="#section-6.2-4" class="pilcrow">¶</a>
 </div>
 <p id="section-6.2-5">is zero if F already falls exactly on a Group boundary of the Target Track,
