@@ -1,5 +1,5 @@
 ---
-title: "Subscriber-Side Multi-Variant Fast Switching for Media over QUIC"
+title: "Subscriber-Side Multi-Variant Fast Track Switching for MOQT"
 abbrev: moq-fast-switching
 docname: draft-ugur-moq-fast-switching-latest
 category: info
@@ -9,9 +9,8 @@ area: "Applications and Real-Time"
 submissiontype: IETF
 keyword:
  - media over quic
- - fast switching
+ - fast track switching
  - adaptive bitrate
- - GOP ladder
 venue:
   mail: "moq@ietf.org"
   arch: "https://mailarchive.ietf.org/arch/browse/moq/"
@@ -34,10 +33,10 @@ author:
     organization: Ozyegin University
     email: zafer.gurel@ozu.edu.tr
  -
-    ins: A. C. Begen
-    name: Ali C. Begen
-    organization: Ozyegin University
-    email: ali.begen@ozyegin.edu.tr
+    ins: A. Begen
+    name: Ali Begen
+    organization: Networked Media
+    email: ali.begen@networked.media
 
 normative:
   MoQTransport: I-D.ietf-moq-transport
@@ -59,17 +58,17 @@ informative:
 
 --- abstract
 
-This document describes Subscriber-Side Fast Switching (SFS), a technique
-that allows a Media over QUIC Transport (MOQT) subscriber to switch between
-tracks that carry the same encoded quality but use different Group of
-Pictures (GOP) lengths, combining the compression efficiency of a long GOP
-with the low switching latency of a short GOP. A publisher using this
-technique packages each encoded quality as a ladder of tracks distinguished
+This document describes subscriber-side multi-variant fast track switching (MVFTS), a technique
+that allows a MOQ Transport (MOQT) subscriber to switch between
+tracks that are encoded at the same bitrate but use different group of
+pictures (GoP) lengths, combining the compression efficiency of a long GoP
+with the low switching delay of a short GoP. A publisher using this
+technique packages each encoded bitrate as a ladder of tracks distinguished
 only by their keyframe interval, numbers those tracks' Group IDs so that they
 share a common alignment, and advertises the keyframe interval of each track
-in the MOQT Streaming Format (MSF) catalog. A subscriber uses this
+in a MOQT Streaming Format (MSF) catalog. A subscriber uses this
 information to compute the nearest valid switch point on any track in scope
-and to perform the switch using the SWITCH_FROM request parameter in Soft
+and to perform the switch using the SWITCH_FROM request parameter in soft
 mode.
 
 --- middle
@@ -77,30 +76,30 @@ mode.
 # Introduction
 
 Adaptive bitrate (ABR) delivery of live and on-demand media involves a
-tension between two goals. Long GOPs improve compression efficiency, since
-inter-coded pictures are cheaper to send than keyframes. Short GOPs reduce
-the latency of joining a track or switching to a different one, since a
-subscriber can only begin decoding a track at a keyframe. A publisher
-therefore has to pick a single GOP length that compromises between these two
-goals for every track it offers, unless more than one GOP length is made
+tension between two goals. Long GoPs improve compression efficiency, since
+inter-coded pictures are cheaper to send than keyframes. Short GoPs reduce
+the delay of joining a track or switching to a different one, since a
+subscriber can only begin decoding a track at a keyframe. A publisher, 
+therefore, has to pick a single GoP length that compromises between these two
+goals for every track it offers, unless more than one GoP length is made
 available at once.
 
-This document describes a technique, Subscriber-Side Fast Switching (SFS),
-in which a publisher offers several tracks per encoded quality, each using a
-different GOP length, and a subscriber picks whichever of these tracks gets
-it to its desired quality soonest. Because every track offering the same
-quality carries identical content, encoded at the same bitrate and
+This document describes a technique, subscriber-side multi-variant fast track switching (MVFTS),
+in which a publisher offers several tracks per encoded bitrate and resolution, each using a
+different GoP length, and a subscriber picks whichever of these tracks gets
+it to its desired bitrate the soonest. Because every track at the same
+bitrate carries identical content, encoded at the same
 resolution, a subscriber can switch between them purely to shorten its wait
-for a keyframe, and can equally switch between tracks of different qualities
+for a keyframe, and can equally switch between tracks of different bitrates
 by considering the keyframe opportunities of both the current and the target
-quality's tracks together.
+bitrate's tracks together.
 
 This technique depends on two other specifications. It reuses the Catalog
 and Track Object model, including the "keyframeSpacing" and "altGroup" Track
 Object fields, defined by the MOQT Streaming Format {{MSF}}. It performs the
-actual switch using the SWITCH_FROM request parameter and its Soft mode,
+actual switch using the SWITCH_FROM request parameter and its soft mode,
 proposed for {{MoQTransport}} in {{SWITCH-FROM-PR}} and
-{{SWITCH-FROM-SOFT-PR}} respectively. Neither pull request had been merged
+{{SWITCH-FROM-SOFT-PR}}, respectively. Neither pull request had been merged
 into {{MoQTransport}} at the time of writing; this document is written as
 though both are already part of it, and implementers should consult the
 referenced pull requests for their current status before relying on this
@@ -111,9 +110,9 @@ subscriber can use the "keyframeSpacing" field to compute a single valid
 switch point when first joining a track. This document is intended to
 supersede that proposal as the primary specification of keyframe-interval-
 based switching for MOQT: it keeps the "keyframeSpacing" field but adds the
-Group ID alignment convention, the multi-track and multi-quality selection
+Group ID alignment convention, the multi-track and multi-bitrate selection
 procedure, and the SWITCH_FROM-based switching procedure needed to use it
-continuously, not only when first joining a broadcast.
+continuously, not only when first joining a live broadcast.
 
 ## Document Structure
 
@@ -124,8 +123,8 @@ Catalog fields a publisher uses to advertise them. {{selection}} specifies
 how a subscriber computes candidate switch points and selects among them.
 {{switching}} specifies how a subscriber executes a switch using SWITCH_FROM.
 {{buffering}} describes the buffering a subscriber needs during a switch.
-{{security}} and {{iana}} close the document with Security and IANA
-Considerations.
+{{security}} and {{iana}} concludes the document with security and IANA
+considerations.
 
 # Conventions and Definitions {#model}
 
@@ -138,20 +137,20 @@ Quality:
   such as resolution, bitrate, and codec profile, excluding its keyframe
   interval.
 
-GOP:
+GoP:
 : Group of Pictures. The set of coded pictures between one keyframe
   (inclusive) and the next (exclusive). Within this document, each MOQT
-  Group ({{MoQTransport}}) carries exactly one GOP (see {{publisher-reqs}}).
+  Group ({{MoQTransport}}) carries exactly one GoP (see {{publisher-reqs}}).
 
 Switch Set:
 : The set of Tracks that share one "altGroup" value ({{MSF}}) and among
-  which a subscriber performs SFS. A Switch Set can contain Tracks of more
-  than one Quality.
+  which a subscriber performs MVFTS. A Switch Set can contain Tracks of more
+  than one bitrate/resolution.
 
-GOP Ladder:
-: The subset of a Switch Set's Tracks that share one Quality but differ in
-  their "keyframeSpacing" ({{MSF}}) value. A Switch Set contains one GOP
-  Ladder per Quality it offers.
+GoP Ladder:
+: The subset of a Switch Set's Tracks that share one bitrate but differ in
+  their "keyframeSpacing" ({{MSF}}) value. A Switch Set contains one GoP
+  Ladder per bitrate it offers.
 
 Alignment Unit (Gm):
 : The smallest "keyframeSpacing" value among all Tracks in a Switch Set.
@@ -172,24 +171,24 @@ Switch Point:
 
 # Overview {#overview}
 
-A publisher using SFS offers one or more Qualities, each as a GOP Ladder of
+A publisher using MVFTS offers one or more bitrates, each as a GoP Ladder of
 two or more Tracks that are otherwise identical but use different keyframe
 intervals, all combined into a single Switch Set. For example, a publisher
-might offer a 720p Quality and a 1080p Quality, each with short-, medium-,
-and long-GOP Tracks, for a Switch Set of six Tracks in total:
+might offer a 720p bitrate and a 1080p bitrate, each with short-, medium-,
+and long-GoP Tracks, for a Switch Set of six Tracks in total:
 
 ~~~ascii-figure
 Switch Set (altGroup = 1)
- +-- 720p GOP Ladder
+ +-- 720p GoP Ladder
  |    +-- 720p-short   (keyframeSpacing = 2)
  |    +-- 720p-medium  (keyframeSpacing = 4)
  |    +-- 720p-long    (keyframeSpacing = 8)
- +-- 1080p GOP Ladder
+ +-- 1080p GoP Ladder
       +-- 1080p-short  (keyframeSpacing = 2)
       +-- 1080p-medium (keyframeSpacing = 4)
       +-- 1080p-long   (keyframeSpacing = 8)
 ~~~
-{: title="Example Switch Set with two Qualities"}
+{: title="Example Switch Set with two bitrates"}
 
 The publisher numbers the Group IDs of every Track in the Switch Set
 according to a single, shared Alignment Unit, so that any Group ID on any
@@ -198,16 +197,16 @@ Track corresponds to a specific, predictable position in every other Track
 "altGroup" in the Catalog ({{catalog}}).
 
 A subscriber that is receiving one Track from the Switch Set continuously
-re-evaluates whether a different Track in the same GOP Ladder, or a
-different GOP Ladder entirely, has a closer upcoming Switch Point
+re-evaluates whether a different Track in the same GoP Ladder, or a
+different GoP Ladder entirely, has a closer upcoming Switch Point
 ({{selection}}). When it finds one, it issues a SUBSCRIBE or REQUEST_UPDATE
-carrying SWITCH_FROM in Soft mode, targeting that Switch Point
+carrying SWITCH_FROM in soft mode, targeting that Switch Point
 ({{switching}}), and buffers objects from both Tracks until the handoff
 completes ({{buffering}}).
 
 # Publisher Requirements {#publisher-reqs}
 
-A publisher that offers a Switch Set for use with SFS MUST meet the
+A publisher that offers a Switch Set for use with MVFTS MUST meet the
 following requirements for every Track in that Switch Set, in addition to
 any other applicable requirements of {{MSF}}:
 
@@ -218,14 +217,14 @@ any other applicable requirements of {{MSF}}:
 
 * Every Track in the Switch Set MUST be time-aligned with every other Track
   at Object boundaries: the media presentation time of the first Object of
-  a Group on one Track MUST coincide with the media presentation time of
-  some Object on every other Track in the Switch Set.
+  a Group on one Track MUST coincide with the media presentation time of the
+  same Object on every other Track in the Switch Set.
 
 * Every Track's "keyframeSpacing" value MUST be an integer multiple of the
   Switch Set's Alignment Unit (Gm), i.e., the smallest "keyframeSpacing"
   value among all Tracks in the Switch Set. This is what makes the Frame
   Number defined in {{selection}} comparable across every Track in the
-  Switch Set, including Tracks of different Qualities.
+  Switch Set, including Tracks of different bitrates.
 
 * For a Track whose "keyframeSpacing" is S, let k = S / Gm. The publisher
   MUST number that Track's Groups 1, 1 + k, 1 + 2k, 1 + 3k, and so on
@@ -241,7 +240,7 @@ that Groups 2, 3, and 4 will never be published on this Track.
 
 # Catalog {#catalog}
 
-A publisher advertises the properties needed for SFS using two Track Object
+A publisher advertises the properties needed for MVFTS using two Track Object
 fields already defined by {{MSF}}:
 
 altGroup:
@@ -253,14 +252,14 @@ keyframeSpacing:
 : Every Track in a Switch Set MUST include "keyframeSpacing", populated with
   the number of Objects in each of that Track's Groups (equivalently, its
   keyframe interval expressed in Objects). A subscriber uses this field, and
-  the constraints in {{publisher-reqs}}, to identify each Track's GOP Ladder
-  (the other Tracks in the Switch Set that share the same Quality) and to
+  the constraints in {{publisher-reqs}}, to identify each Track's GoP Ladder
+  (the other Tracks in the Switch Set that share the same bitrate) and to
   compute Frame Numbers and Switch Points as described in {{selection}}.
 
 This document does not define any further Catalog fields; a subscriber
-distinguishes Tracks of the same Quality from Tracks of different Qualities
-within a Switch Set using the same Quality-identifying Track Object fields
-it would otherwise use to select among non-SFS Tracks (for example, "width",
+distinguishes Tracks of the same bitrate from Tracks of different bitrates
+within a Switch Set using the same bitrate-identifying Track Object fields
+it would otherwise use to select among non-MVFTS Tracks (for example, "width",
 "height", and "bitrate").
 
 # Client-Side Track and Group Selection {#selection}
@@ -309,33 +308,33 @@ candidate Target Tracks reach a Switch Point.
 
 A subscriber evaluates candidate Target Tracks and picks one as follows:
 
-* If the subscriber is not changing Quality, the candidates are the other
-  Tracks in the Current Track's GOP Ladder with a strictly larger
+* If the subscriber is not changing bitrate, the candidates are the other
+  Tracks in the Current Track's GoP Ladder with a strictly larger
   "keyframeSpacing" than the Current Track. The subscriber picks the
   candidate with the smallest Distance, i.e., the one that lets it move to
   a more efficient Track as soon as possible. A subscriber that finds no
   Switch Point closer than remaining on the Current Track SHOULD NOT switch.
 
-* If the subscriber is changing to a different Quality, the candidates are
-  every Track in the Target Quality's GOP Ladder, together with the other
-  Tracks in the Current Track's GOP Ladder with a strictly larger
+* If the subscriber is changing to a different bitrate, the candidates are
+  every Track in the Target bitrate's GoP Ladder, together with the other
+  Tracks in the Current Track's GoP Ladder with a strictly larger
   "keyframeSpacing" than the Current Track. The subscriber picks the
   candidate with the smallest Distance. If more than one candidate ties for
   the smallest Distance, the subscriber prefers a candidate in the Target
-  Quality's GOP Ladder, since it makes direct progress toward the desired
-  Quality. A switch to a Track in the Current Track's own GOP Ladder in this
-  case is an intermediate step and does not end the Quality change; the
+  Quality's GoP Ladder, since it makes direct progress toward the desired
+  bitrate. A switch to a Track in the Current Track's own GoP Ladder in this
+  case is an intermediate step and does not end the bitrate change; the
   subscriber repeats this procedure after each switch until it reaches the
-  Target Quality.
+  Target bitrate.
 
 A subscriber MAY instead implement a simpler policy that only ever considers
-one GOP Ladder at a time (the Current Track's GOP Ladder, or, when changing
-Quality, only the Target Quality's GOP Ladder) and that breaks ties by
+one GoP Ladder at a time (the Current Track's GoP Ladder, or, when changing
+bitrate, only the Target Quality's GoP Ladder) and that breaks ties by
 preferring the candidate with the largest "keyframeSpacing" rather than by
-preferring progress toward the Target Quality. This simpler policy is easier
+preferring progress toward the Target bitrate. This simpler policy is easier
 to implement and is already in use in at least one implementation of this
 document, at the cost of occasionally taking a less direct path to the
-Target Quality.
+Target bitratae.
 
 ## Worked Example
 
@@ -348,9 +347,9 @@ and Groups are numbered 1, 5, 9, 13, ...). Its Frame Number is:
 frameNumber = (13 - 1) * 2 + 3 + 1 = 28
 ~~~
 
-Suppose the application now requests a switch to the 1080p Quality. The
+Suppose the application now requests a switch to the 1080p bitrate. The
 subscriber computes targetGroup(T) and Distance(T) for every Track in the
-1080p GOP Ladder:
+1080p GoP Ladder:
 
 | Track        | T | targetGroup(T) | Distance(T) |
 |:-------------|--:|---------------:|------------:|
@@ -359,28 +358,28 @@ subscriber computes targetGroup(T) and Distance(T) for every Track in the
 | 1080p-long   | 8 |              17 |           5 |
 
 1080p-short and 1080p-medium tie for the smallest Distance; both are in the
-Target Quality's GOP Ladder, so the subscriber picks one of them, for
+Target bitrate's GoP Ladder, so the subscriber picks one of them, for
 example 1080p-medium, and switches to Group 15 of that Track.
 
 # Performing the Switch {#switching}
 
 A subscriber performs a switch found as described in {{selection}} by
 sending a SUBSCRIBE, or a REQUEST_UPDATE on an existing subscription,
-carrying the SWITCH_FROM parameter ({{SWITCH-FROM-PR}}) in Soft mode
+carrying the SWITCH_FROM parameter ({{SWITCH-FROM-PR}}) in soft mode
 ({{SWITCH-FROM-SOFT-PR}}), with the Switch From Request ID identifying the
 Current Track's subscription and the Start Group set to the computed
 targetGroup(T).
 
-A subscriber MUST NOT use Hard mode for this purpose. Because the Current
+A subscriber MUST NOT use hard mode for this purpose. Because the Current
 and Target Tracks use different keyframe intervals, a relay has no way to
-know, from Hard mode alone, where the two Tracks' Objects correspond to the
+know, from hard mode alone, where the two Tracks' Objects correspond to the
 same point in the media timeline, and could stop forwarding the Current
 Track before the Target Track has anything to show in its place. Soft mode
 avoids this by having the publisher continue the Current Track's
 subscription up to a computed End Group before stopping it, giving a clean
 handoff instead of a gap or an overlap of arbitrary duration.
 
-Per {{SWITCH-FROM-SOFT-PR}}, Soft mode stops the suspending subscription at
+Per {{SWITCH-FROM-SOFT-PR}}, soft mode stops the suspending subscription at
 "Start Group - 1". Because Group IDs are not comparable 1:1 across Tracks
 with different "keyframeSpacing" values, a subscriber instead computes the
 End Group it expects the publisher to use directly from the Current Track's
@@ -426,7 +425,7 @@ it keeps subscribed in this way at once; see {{security}}.
 
 # Client Buffering and Playout Continuity {#buffering}
 
-Because Soft mode keeps delivering the Current Track up to its End Group
+Because soft mode keeps delivering the Current Track up to its End Group
 while the Target Track begins delivering from its Switch Point, a
 subscriber receives Objects from both Tracks for a short overlap. A
 subscriber MUST hold received Objects from both Tracks in a small buffer,
