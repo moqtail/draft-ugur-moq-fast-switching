@@ -282,14 +282,14 @@ on every Track in the Switch Set.
 
 ## Switch Points
 
-Given a candidate Target Track with keyframeSpacing T (also a multiple of
+Given a candidate Target Track with keyframeSpacing S (also a multiple of
 Gm, per {{publisher-reqs}}), and the subscriber's current Frame Number F
 (computed from the Current Track's most recently received Location), the
 nearest Switch Point on the Target Track that is not earlier than F is Group
 ID:
 
 ~~~
-targetGroup(T) = 1 + (T / Gm) * ceil((F - 1) / T)
+targetGroup(S) = 1 + (S / Gm) * ceil((F - 1) / S)
 ~~~
 
 This is the Group ID of the first Group on the Target Track whose first
@@ -297,7 +297,7 @@ Object's Frame Number is greater than or equal to F. The number of Frame
 Numbers between F and that Switch Point,
 
 ~~~
-Distance(T) = (targetGroup(T) - 1) * Gm + 1 - F
+Distance(S) = (targetGroup(S) - 1) * Gm + 1 - F
 ~~~
 
 is zero if F already falls exactly on a Group boundary of the Target Track,
