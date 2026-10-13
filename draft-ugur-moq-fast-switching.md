@@ -39,8 +39,8 @@ author:
     email: ali.begen@networked.media
 
 normative:
-  MoQTransport: I-D.ietf-moq-transport
-  MSF: I-D.ietf-moq-msf
+  MoQTransport: I-D.draft-ietf-moq-transport-22
+  MSF: I-D.draft-ietf-moq-msf-01
 
 informative:
   SWITCH-FROM-PR:
