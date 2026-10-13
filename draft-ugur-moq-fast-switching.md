@@ -79,7 +79,7 @@ Adaptive bitrate (ABR) delivery of live and on-demand media involves a
 tension between two goals. Long GoPs improve compression efficiency, since
 inter-coded pictures are cheaper to send than keyframes. Short GoPs reduce
 the delay of joining a track or switching to a different one, since a
-subscriber can only begin decoding a track at a keyframe. A publisher, 
+subscriber can only begin decoding a track at a keyframe. A publisher,
 therefore, has to pick a single GoP length that compromises between these two
 goals for every track it offers, unless more than one GoP length is made
 available at once.
