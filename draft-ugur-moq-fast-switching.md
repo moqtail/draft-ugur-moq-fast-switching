@@ -227,16 +227,16 @@ any other applicable requirements of {{MSF}}:
   Switch Set, including Tracks of different bitrates.
 
 * For a Track whose "keyframeSpacing" is S, let k = S / Gm. The publisher
-  MUST number that Track's Groups 1, 1 + k, 1 + 2k, 1 + 3k, and so on
-  (instead of 1, 2, 3, ...), and MUST include a Prior Group ID Gap Object
+  MUST number that Track's Groups 0, k, 2k, 3k, and so on
+  (instead of 0, 1, 2, ...), and MUST include a Prior Group ID Gap Object
   Property ({{MoQTransport}}) with value k - 1 on the first Object of every
   Group after the first. This signals that the k - 1 intervening Group ID
   values are intentionally never used, rather than missing.
 
 For example, a Track with keyframeSpacing 8 in a Switch Set whose Alignment
-Unit is 2 has k = 4, and is numbered Group 1, Group 5, Group 9, and so on;
-the first Object of Group 5 carries a Prior Group ID Gap of 3, indicating
-that Groups 2, 3, and 4 will never be published on this Track.
+Unit is 2 has k = 4, and is numbered Group 0, Group 4, Group 8, and so on;
+the first Object of Group 4 carries a Prior Group ID Gap of 3, indicating
+that Groups 1, 2, and 3 will never be published on this Track.
 
 # Catalog {#catalog}
 
@@ -268,10 +268,10 @@ it would otherwise use to select among non-MVFTS Tracks (for example, "width",
 
 Within one Switch Set, let Gm be the Alignment Unit. For a Track with
 keyframeSpacing S, let k = S / Gm as in {{publisher-reqs}}. The Frame Number
-of Object O (0-based, per {{MoQTransport}}) of Group G on that Track is:
+of Object O of Group G on that Track (both 0-based, per {{MoQTransport}}) is:
 
 ~~~
-frameNumber = (G - 1) * Gm + O + 1
+frameNumber = G * Gm + O
 ~~~
 
 Because every Track's Group IDs have been numbered as described in
@@ -289,7 +289,7 @@ nearest Switch Point on the Target Track that is not earlier than F is Group
 ID:
 
 ~~~
-targetGroup(S) = 1 + (S / Gm) * ceil((F - 1) / S)
+targetGroup(S) = (S / Gm) * ceil(F / S)
 ~~~
 
 This is the Group ID of the first Group on the Target Track whose first
@@ -297,7 +297,7 @@ Object's Frame Number is greater than or equal to F. The number of Frame
 Numbers between F and that Switch Point,
 
 ~~~
-Distance(S) = (targetGroup(S) - 1) * Gm + 1 - F
+Distance(S) = targetGroup(S) * Gm - F
 ~~~
 
 is zero if F already falls exactly on a Group boundary of the Target Track,
@@ -340,11 +340,11 @@ Target bitrate.
 
 Consider the Switch Set from {{overview}}, with Gm = 2. A subscriber is
 receiving 720p-long (keyframeSpacing 8, k = 4) and has just received Object
-3 of Group 13 (the fourth Group of this Track, since Group 1 is the first
-and Groups are numbered 1, 5, 9, 13, ...). Its Frame Number is:
+3 of Group 12 (the fourth Group of this Track, whose Groups
+are numbered 0, 4, 8, 12, ...). Its Frame Number is:
 
 ~~~
-frameNumber = (13 - 1) * 2 + 3 + 1 = 28
+frameNumber = 12 * 2 + 3 = 27
 ~~~
 
 Suppose the application now requests a switch to the 1080p bitrate. The
@@ -353,13 +353,13 @@ subscriber computes targetGroup(T) and Distance(T) for every Track in the
 
 | Track        |    T | targetGroup(T) | Distance(T) |
 | :----------- | ---: | -------------: | ----------: |
-| 1080p-short  |    2 |             15 |           1 |
-| 1080p-medium |    4 |             15 |           1 |
-| 1080p-long   |    8 |             17 |           5 |
+| 1080p-short  |    2 |             14 |           1 |
+| 1080p-medium |    4 |             14 |           1 |
+| 1080p-long   |    8 |             16 |           5 |
 
 1080p-short and 1080p-medium tie for the smallest Distance; both are in the
 Target bitrate's GoP Ladder, so the subscriber picks one of them, for
-example 1080p-medium, and switches to Group 15 of that Track.
+example 1080p-medium, and switches to Group 14 of that Track.
 
 # Performing the Switch {#switching}
 
@@ -385,21 +385,22 @@ with different "keyframeSpacing" values, a subscriber instead computes the
 End Group it expects the publisher to use directly from the Current Track's
 own numbering. Let S and k_old = S / Gm be the Current Track's own
 keyframeSpacing and group increment, and let switchFrame be the Frame
-Number of the chosen Switch Point, (targetGroup(T) - 1) * Gm + 1:
+Number of the chosen Switch Point, targetGroup(T) * Gm:
 
 * If the Target Track's keyframeSpacing T is greater than S, the Switch
   Point can fall after the Group the Current Track is presently sending, so
-  the expected End Group is the Current Track's own Group whose last Frame
-  Number is the greatest multiple of S not exceeding switchFrame - 1:
+  the expected End Group is the last of the Current Track's own Groups
+  that ends at or before switchFrame, i.e., the Group just before the one
+  starting at the greatest multiple of S not exceeding switchFrame:
 
   ~~~
-  End Group = 1 + k_old * (floor((switchFrame - 1) / S) - 1)
+  End Group = k_old * (floor(switchFrame / S) - 1)
   ~~~
 
   For example, in a Switch Set with Gm = 2, a Current Track with S = 4
-  (k_old = 2) sending Frame Number 9 (its Group 5), switching to a Target
-  Track with T = 6 and switchFrame = 13, has End Group
-  1 + 2 * (floor(12 / 4) - 1) = 1 + 2 * 2 = 5: the Current Track's Group 5
+  (k_old = 2) sending Frame Number 8 (its Group 4), switching to a Target
+  Track with T = 6 and switchFrame = 12, has End Group
+  2 * (floor(12 / 4) - 1) = 2 * 2 = 4: the Current Track's Group 4
   is also its last Group before the switch.
 
 * Otherwise (T is less than or equal to S), the Current Track has no Group
@@ -409,7 +410,7 @@ Number of the chosen Switch Point, (targetGroup(T) - 1) * Gm + 1:
   earlier than the end of the Group it is already receiving. Continuing the
   worked example in {{selection}}, switching from 720p-long (S = 8) to
   1080p-medium (T = 4) has T less than S, so the expected End Group is
-  Group 13, the Group the subscriber was already receiving.
+  Group 12, the Group the subscriber was already receiving.
 
 A subscriber does not need to separately unsubscribe from the Current
 Track's subscription: once the publisher has delivered the End Group, it
