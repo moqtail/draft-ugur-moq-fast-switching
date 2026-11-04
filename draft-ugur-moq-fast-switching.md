@@ -390,18 +390,17 @@ Number of the chosen Switch Point, targetGroup(T) * Gm:
 
 * If the Target Track's keyframeSpacing T is greater than S, the Switch
   Point can fall after the Group the Current Track is presently sending, so
-  the expected End Group is the last of the Current Track's own Groups
-  that ends at or before switchFrame, i.e., the Group just before the one
-  starting at the greatest multiple of S not exceeding switchFrame:
+  the expected End Group is the Current Track's own Group that contains
+  Frame Number switchFrame - 1, the last frame before the Switch Point:
 
   ~~~
-  End Group = k_old * (floor(switchFrame / S) - 1)
+  End Group = k_old * floor((switchFrame - 1) / S)
   ~~~
 
   For example, in a Switch Set with Gm = 30, a Current Track with S = 60
   (k_old = 2) sending Frame Number 120 (its Group 4), switching to a Target
   Track with T = 90 and switchFrame = 180, has End Group
-  2 * (floor(180 / 60) - 1) = 2 * 2 = 4: the Current Track's Group 4
+  2 * floor(179 / 60) = 2 * 2 = 4: the Current Track's Group 4
   is also its last Group before the switch.
 
 * Otherwise (T is less than or equal to S), the Current Track has no Group
