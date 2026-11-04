@@ -174,19 +174,20 @@ Switch Point:
 A publisher using MVFTS offers one or more bitrates, each as a GoP Ladder of
 two or more Tracks that are otherwise identical but use different keyframe
 intervals, all combined into a single Switch Set. For example, a publisher
-might offer a 720p bitrate and a 1080p bitrate, each with short-, medium-,
-and long-GoP Tracks, for a Switch Set of six Tracks in total:
+might offer a 720p bitrate and a 1080p bitrate at 30 frames per second, each
+with 1-, 2-, and 4-second GoP Tracks, for a Switch Set of six Tracks in
+total:
 
 ~~~ascii-figure
 Switch Set (altGroup = 1)
  +-- 720p GoP Ladder
- |    +-- 720p-short   (keyframeSpacing = 2)
- |    +-- 720p-medium  (keyframeSpacing = 4)
- |    +-- 720p-long    (keyframeSpacing = 8)
+ |    +-- 720p-short   (keyframeSpacing = 30)
+ |    +-- 720p-medium  (keyframeSpacing = 60)
+ |    +-- 720p-long    (keyframeSpacing = 120)
  +-- 1080p GoP Ladder
-      +-- 1080p-short  (keyframeSpacing = 2)
-      +-- 1080p-medium (keyframeSpacing = 4)
-      +-- 1080p-long   (keyframeSpacing = 8)
+      +-- 1080p-short  (keyframeSpacing = 30)
+      +-- 1080p-medium (keyframeSpacing = 60)
+      +-- 1080p-long   (keyframeSpacing = 120)
 ~~~
 {: title="Example Switch Set with two bitrates"}
 
@@ -233,8 +234,8 @@ any other applicable requirements of {{MSF}}:
   Group after the first. This signals that the k - 1 intervening Group ID
   values are intentionally never used, rather than missing.
 
-For example, a Track with keyframeSpacing 8 in a Switch Set whose Alignment
-Unit is 2 has k = 4, and is numbered Group 0, Group 4, Group 8, and so on;
+For example, a Track with keyframeSpacing 120 in a Switch Set whose Alignment
+Unit is 30 has k = 4, and is numbered Group 0, Group 4, Group 8, and so on;
 the first Object of Group 4 carries a Prior Group ID Gap of 3, indicating
 that Groups 1, 2, and 3 will never be published on this Track.
 
@@ -338,13 +339,13 @@ Target bitrate.
 
 ## Worked Example
 
-Consider the Switch Set from {{overview}}, with Gm = 2. A subscriber is
-receiving 720p-long (keyframeSpacing 8, k = 4) and has just received Object
-3 of Group 12 (the fourth Group of this Track, whose Groups
+Consider the Switch Set from {{overview}}, with Gm = 30. A subscriber is
+receiving 720p-long (keyframeSpacing 120, k = 4) and has just received Object
+45 of Group 12 (the fourth Group of this Track, whose Groups
 are numbered 0, 4, 8, 12, ...). Its Frame Number is:
 
 ~~~
-frameNumber = 12 * 2 + 3 = 27
+frameNumber = 12 * 30 + 45 = 405
 ~~~
 
 Suppose the application now requests a switch to the 1080p bitrate. The
@@ -353,9 +354,9 @@ subscriber computes targetGroup(T) and Distance(T) for every Track in the
 
 | Track        |    T | targetGroup(T) | Distance(T) |
 | :----------- | ---: | -------------: | ----------: |
-| 1080p-short  |    2 |             14 |           1 |
-| 1080p-medium |    4 |             14 |           1 |
-| 1080p-long   |    8 |             16 |           5 |
+| 1080p-short  |   30 |             14 |          15 |
+| 1080p-medium |   60 |             14 |          15 |
+| 1080p-long   |  120 |             16 |          75 |
 
 1080p-short and 1080p-medium tie for the smallest Distance; both are in the
 Target bitrate's GoP Ladder, so the subscriber picks one of them, for
@@ -397,10 +398,10 @@ Number of the chosen Switch Point, targetGroup(T) * Gm:
   End Group = k_old * (floor(switchFrame / S) - 1)
   ~~~
 
-  For example, in a Switch Set with Gm = 2, a Current Track with S = 4
-  (k_old = 2) sending Frame Number 8 (its Group 4), switching to a Target
-  Track with T = 6 and switchFrame = 12, has End Group
-  2 * (floor(12 / 4) - 1) = 2 * 2 = 4: the Current Track's Group 4
+  For example, in a Switch Set with Gm = 30, a Current Track with S = 60
+  (k_old = 2) sending Frame Number 120 (its Group 4), switching to a Target
+  Track with T = 90 and switchFrame = 180, has End Group
+  2 * (floor(180 / 60) - 1) = 2 * 2 = 4: the Current Track's Group 4
   is also its last Group before the switch.
 
 * Otherwise (T is less than or equal to S), the Current Track has no Group
@@ -408,8 +409,8 @@ Number of the chosen Switch Point, targetGroup(T) * Gm:
   Switch Point, so the expected End Group is simply the Current Track's own
   Group ID at the time of the switch; the subscriber cannot cut over any
   earlier than the end of the Group it is already receiving. Continuing the
-  worked example in {{selection}}, switching from 720p-long (S = 8) to
-  1080p-medium (T = 4) has T less than S, so the expected End Group is
+  worked example in {{selection}}, switching from 720p-long (S = 120) to
+  1080p-medium (T = 60) has T less than S, so the expected End Group is
   Group 12, the Group the subscriber was already receiving.
 
 A subscriber does not need to separately unsubscribe from the Current
