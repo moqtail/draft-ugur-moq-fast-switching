@@ -22,25 +22,25 @@ information to compute the nearest valid switch point on any track in scope
 and to perform the switch using the SWITCH_FROM request parameter in soft
 mode. 
     " name="description">
-<meta content="xml2rfc 3.34.1" name="generator">
+<meta content="xml2rfc 3.35.0" name="generator">
 <meta content="media over quic" name="keyword">
 <meta content="fast track switching" name="keyword">
 <meta content="adaptive bitrate" name="keyword">
 <meta content="draft-ugur-moq-fast-switching-latest" name="ietf.draft">
 <!-- Generator version information:
-  xml2rfc 3.34.1
-    Python 3.14.8
-    ConfigArgParse 1.8.0
+  xml2rfc 3.35.0
+    Python 3.14.10
+    ConfigArgParse 1.9.0
     google-i18n-address 3.1.1
     intervaltree 3.2.1
     Jinja2 3.1.6
     lxml 6.1.1
     natsort 8.4.0
-    platformdirs 4.12.2
+    platformdirs 4.14.3
     pycountry 24.6.1
     PyYAML 6.0.3
     requests 2.33.1
-    wcwidth 0.9.1
+    wcwidth 0.9.4
 -->
 <link href="draft-ugur-moq-fast-switching.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -1056,11 +1056,11 @@ svg {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">moq-fast-switching</td>
-<td class="right">October 2026</td>
+<td class="right">November 2026</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Ugur, et al.</td>
-<td class="center">Expires 16 April 2027</td>
+<td class="center">Expires 8 May 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1073,12 +1073,12 @@ svg {
 <dd class="internet-draft">draft-ugur-moq-fast-switching-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-10-13" class="published">13 October 2026</time>
+<time datetime="2026-11-04" class="published">4 November 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-04-16">16 April 2027</time></dd>
+<dd class="expires"><time datetime="2027-05-08">8 May 2027</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1142,7 +1142,7 @@ mode.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 16 April 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 8 May 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1387,20 +1387,21 @@ that track without missing or duplicating any presented media.<a href="#section-
 <p id="section-3-1">A publisher using MVFTS offers one or more bitrates, each as a GoP Ladder of
 two or more Tracks that are otherwise identical but use different keyframe
 intervals, all combined into a single Switch Set. For example, a publisher
-might offer a 720p bitrate and a 1080p bitrate, each with short-, medium-,
-and long-GoP Tracks, for a Switch Set of six Tracks in total:<a href="#section-3-1" class="pilcrow">¶</a></p>
+might offer a 720p bitrate and a 1080p bitrate at 30 frames per second, each
+with 1-, 2-, and 4-second GoP Tracks, for a Switch Set of six Tracks in
+total:<a href="#section-3-1" class="pilcrow">¶</a></p>
 <span id="name-example-switch-set-with-two"></span><figure id="figure-1">
         <div class="lang-ascii-figure sourcecode" id="section-3-2.1">
 <pre>
 Switch Set (altGroup = 1)
  +-- 720p GoP Ladder
- |    +-- 720p-short   (keyframeSpacing = 2)
- |    +-- 720p-medium  (keyframeSpacing = 4)
- |    +-- 720p-long    (keyframeSpacing = 8)
+ |    +-- 720p-short   (keyframeSpacing = 30)
+ |    +-- 720p-medium  (keyframeSpacing = 60)
+ |    +-- 720p-long    (keyframeSpacing = 120)
  +-- 1080p GoP Ladder
-      +-- 1080p-short  (keyframeSpacing = 2)
-      +-- 1080p-medium (keyframeSpacing = 4)
-      +-- 1080p-long   (keyframeSpacing = 8)
+      +-- 1080p-short  (keyframeSpacing = 30)
+      +-- 1080p-medium (keyframeSpacing = 60)
+      +-- 1080p-long   (keyframeSpacing = 120)
 </pre>
 </div>
 <figcaption><a href="#figure-1" class="selfRef">Figure 1</a>:
@@ -1450,17 +1451,17 @@ Switch Set, including Tracks of different bitrates.<a href="#section-4-2.3.1" cl
 </li>
         <li class="normal" id="section-4-2.4">
           <p id="section-4-2.4.1">For a Track whose "keyframeSpacing" is S, let k = S / Gm. The publisher
-<span class="bcp14">MUST</span> number that Track's Groups 1, 1 + k, 1 + 2k, 1 + 3k, and so on
-(instead of 1, 2, 3, ...), and <span class="bcp14">MUST</span> include a Prior Group ID Gap Object
+<span class="bcp14">MUST</span> number that Track's Groups 0, k, 2k, 3k, and so on
+(instead of 0, 1, 2, ...), and <span class="bcp14">MUST</span> include a Prior Group ID Gap Object
 Property (<span>[<a href="#MoQTransport" class="cite xref">MoQTransport</a>]</span>) with value k - 1 on the first Object of every
 Group after the first. This signals that the k - 1 intervening Group ID
 values are intentionally never used, rather than missing.<a href="#section-4-2.4.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-4-3">For example, a Track with keyframeSpacing 8 in a Switch Set whose Alignment
-Unit is 2 has k = 4, and is numbered Group 1, Group 5, Group 9, and so on;
-the first Object of Group 5 carries a Prior Group ID Gap of 3, indicating
-that Groups 2, 3, and 4 will never be published on this Track.<a href="#section-4-3" class="pilcrow">¶</a></p>
+<p id="section-4-3">For example, a Track with keyframeSpacing 120 in a Switch Set whose Alignment
+Unit is 30 has k = 4, and is numbered Group 0, Group 4, Group 8, and so on;
+the first Object of Group 4 carries a Prior Group ID Gap of 3, indicating
+that Groups 1, 2, and 3 will never be published on this Track.<a href="#section-4-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="catalog">
@@ -1508,10 +1509,10 @@ it would otherwise use to select among non-MVFTS Tracks (for example, "width",
         </h3>
 <p id="section-6.1-1">Within one Switch Set, let Gm be the Alignment Unit. For a Track with
 keyframeSpacing S, let k = S / Gm as in <a href="#publisher-reqs" class="auto internal xref">Section 4</a>. The Frame Number
-of Object O (0-based, per <span>[<a href="#MoQTransport" class="cite xref">MoQTransport</a>]</span>) of Group G on that Track is:<a href="#section-6.1-1" class="pilcrow">¶</a></p>
+of Object O of Group G on that Track (both 0-based, per <span>[<a href="#MoQTransport" class="cite xref">MoQTransport</a>]</span>) is:<a href="#section-6.1-1" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-6.1-2">
 <pre>
-frameNumber = (G - 1) * Gm + O + 1
+frameNumber = G * Gm + O
 </pre><a href="#section-6.1-2" class="pilcrow">¶</a>
 </div>
 <p id="section-6.1-3">Because every Track's Group IDs have been numbered as described in
@@ -1533,7 +1534,7 @@ nearest Switch Point on the Target Track that is not earlier than F is Group
 ID:<a href="#section-6.2-1" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-6.2-2">
 <pre>
-targetGroup(S) = 1 + (S / Gm) * ceil((F - 1) / S)
+targetGroup(S) = (S / Gm) * ceil(F / S)
 </pre><a href="#section-6.2-2" class="pilcrow">¶</a>
 </div>
 <p id="section-6.2-3">This is the Group ID of the first Group on the Target Track whose first
@@ -1541,7 +1542,7 @@ Object's Frame Number is greater than or equal to F. The number of Frame
 Numbers between F and that Switch Point,<a href="#section-6.2-3" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-6.2-4">
 <pre>
-Distance(S) = (targetGroup(S) - 1) * Gm + 1 - F
+Distance(S) = targetGroup(S) * Gm - F
 </pre><a href="#section-6.2-4" class="pilcrow">¶</a>
 </div>
 <p id="section-6.2-5">is zero if F already falls exactly on a Group boundary of the Target Track,
@@ -1593,13 +1594,13 @@ Target bitrate.<a href="#section-6.3-3" class="pilcrow">¶</a></p>
         <h3 id="name-worked-example">
 <a href="#section-6.4" class="section-number selfRef">6.4. </a><a href="#name-worked-example" class="section-name selfRef">Worked Example</a>
         </h3>
-<p id="section-6.4-1">Consider the Switch Set from <a href="#overview" class="auto internal xref">Section 3</a>, with Gm = 2. A subscriber is
-receiving 720p-long (keyframeSpacing 8, k = 4) and has just received Object
-3 of Group 13 (the fourth Group of this Track, since Group 1 is the first
-and Groups are numbered 1, 5, 9, 13, ...). Its Frame Number is:<a href="#section-6.4-1" class="pilcrow">¶</a></p>
+<p id="section-6.4-1">Consider the Switch Set from <a href="#overview" class="auto internal xref">Section 3</a>, with Gm = 30. A subscriber is
+receiving 720p-long (keyframeSpacing 120, k = 4) and has just received Object
+45 of Group 12 (the fourth Group of this Track, whose Groups
+are numbered 0, 4, 8, 12, ...). Its Frame Number is:<a href="#section-6.4-1" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-6.4-2">
 <pre>
-frameNumber = (13 - 1) * 2 + 3 + 1 = 28
+frameNumber = 12 * 30 + 45 = 405
 </pre><a href="#section-6.4-2" class="pilcrow">¶</a>
 </div>
 <p id="section-6.4-3">Suppose the application now requests a switch to the 1080p bitrate. The
@@ -1618,27 +1619,27 @@ subscriber computes targetGroup(T) and Distance(T) for every Track in the
           <tbody>
             <tr>
               <td class="text-left" rowspan="1" colspan="1">1080p-short</td>
-              <td class="text-right" rowspan="1" colspan="1">2</td>
+              <td class="text-right" rowspan="1" colspan="1">30</td>
+              <td class="text-right" rowspan="1" colspan="1">14</td>
               <td class="text-right" rowspan="1" colspan="1">15</td>
-              <td class="text-right" rowspan="1" colspan="1">1</td>
             </tr>
             <tr>
               <td class="text-left" rowspan="1" colspan="1">1080p-medium</td>
-              <td class="text-right" rowspan="1" colspan="1">4</td>
+              <td class="text-right" rowspan="1" colspan="1">60</td>
+              <td class="text-right" rowspan="1" colspan="1">14</td>
               <td class="text-right" rowspan="1" colspan="1">15</td>
-              <td class="text-right" rowspan="1" colspan="1">1</td>
             </tr>
             <tr>
               <td class="text-left" rowspan="1" colspan="1">1080p-long</td>
-              <td class="text-right" rowspan="1" colspan="1">8</td>
-              <td class="text-right" rowspan="1" colspan="1">17</td>
-              <td class="text-right" rowspan="1" colspan="1">5</td>
+              <td class="text-right" rowspan="1" colspan="1">120</td>
+              <td class="text-right" rowspan="1" colspan="1">16</td>
+              <td class="text-right" rowspan="1" colspan="1">75</td>
             </tr>
           </tbody>
         </table>
 <p id="section-6.4-5">1080p-short and 1080p-medium tie for the smallest Distance; both are in the
 Target bitrate's GoP Ladder, so the subscriber picks one of them, for
-example 1080p-medium, and switches to Group 15 of that Track.<a href="#section-6.4-5" class="pilcrow">¶</a></p>
+example 1080p-medium, and switches to Group 14 of that Track.<a href="#section-6.4-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1668,23 +1669,23 @@ with different "keyframeSpacing" values, a subscriber instead computes the
 End Group it expects the publisher to use directly from the Current Track's
 own numbering. Let S and k_old = S / Gm be the Current Track's own
 keyframeSpacing and group increment, and let switchFrame be the Frame
-Number of the chosen Switch Point, (targetGroup(T) - 1) * Gm + 1:<a href="#section-7-3" class="pilcrow">¶</a></p>
+Number of the chosen Switch Point, targetGroup(T) * Gm:<a href="#section-7-3" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-7-4.1">
           <p id="section-7-4.1.1">If the Target Track's keyframeSpacing T is greater than S, the Switch
 Point can fall after the Group the Current Track is presently sending, so
-the expected End Group is the Current Track's own Group whose last Frame
-Number is the greatest multiple of S not exceeding switchFrame - 1:<a href="#section-7-4.1.1" class="pilcrow">¶</a></p>
+the expected End Group is the Current Track's own Group that contains
+Frame Number switchFrame - 1, the last frame before the Switch Point:<a href="#section-7-4.1.1" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-7-4.1.2">
 <pre>
-End Group = 1 + k_old * (floor((switchFrame - 1) / S) - 1)
+End Group = k_old * floor((switchFrame - 1) / S)
 </pre><a href="#section-7-4.1.2" class="pilcrow">¶</a>
 </div>
 <p id="section-7-4.1.3">
-For example, in a Switch Set with Gm = 2, a Current Track with S = 4
-(k_old = 2) sending Frame Number 9 (its Group 5), switching to a Target
-Track with T = 6 and switchFrame = 13, has End Group
-1 + 2 * (floor(12 / 4) - 1) = 1 + 2 * 2 = 5: the Current Track's Group 5
+For example, in a Switch Set with Gm = 30, a Current Track with S = 60
+(k_old = 2) sending Frame Number 120 (its Group 4), switching to a Target
+Track with T = 90 and switchFrame = 180, has End Group
+2 * floor(179 / 60) = 2 * 2 = 4: the Current Track's Group 4
 is also its last Group before the switch.<a href="#section-7-4.1.3" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-7-4.2">
@@ -1693,9 +1694,9 @@ boundary of its own between the Group it is presently sending and the
 Switch Point, so the expected End Group is simply the Current Track's own
 Group ID at the time of the switch; the subscriber cannot cut over any
 earlier than the end of the Group it is already receiving. Continuing the
-worked example in <a href="#selection" class="auto internal xref">Section 6</a>, switching from 720p-long (S = 8) to
-1080p-medium (T = 4) has T less than S, so the expected End Group is
-Group 13, the Group the subscriber was already receiving.<a href="#section-7-4.2.1" class="pilcrow">¶</a></p>
+worked example in <a href="#selection" class="auto internal xref">Section 6</a>, switching from 720p-long (S = 120) to
+1080p-medium (T = 60) has T less than S, so the expected End Group is
+Group 12, the Group the subscriber was already receiving.<a href="#section-7-4.2.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 <p id="section-7-5">A subscriber does not need to separately unsubscribe from the Current
